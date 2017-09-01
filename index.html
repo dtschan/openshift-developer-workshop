@@ -21,7 +21,7 @@
 </script></section><section  data-markdown><script type="text/template">
 ## Agenda
 
-* Pod Requests and Limits
+* Container Requests and Limits
 * Metrics, inkl. Java
 * Application Monitoring
 </script></section><section  data-markdown><script type="text/template">
@@ -29,258 +29,35 @@
 
 </script></section><section  data-markdown><script type="text/template">
 <!--section -->
-# Pod Requests and Limits
+# Container Requests and Limits
+
+* Request: Reserves cpu or memory for a container
+* Limit: Limits the maximum amount of cpu or memory a container can consume
+
+The requests of a pod are the sum of the requests of the containers in the pod.
+The limits of a pod are the sum of the limits of the containers in the pod.
 
 <!-- .slide: class="master02" -->
 </script></section><section  data-markdown><script type="text/template">
-## Jenkins Basic Overview
+## Quality of Service
 
-![Jenkins Overview](images/Jenkins_overview.png)
+Requests and limits determine quality of service:
+
+No request and limit: BestEffort
+Request < Limit: Burstable
+Request = Limit: Guaranteed
 </script></section><section  data-markdown><script type="text/template">
-## Jenkins Basic Info
+## Consequences
 
-* Consists of Masters
-  * Stateful
-  * Management of Jobs, Credentials, ...
-  * Plugins (always run on master)
-* and Slaves
-  * Actually run the jobs
-  * Stateless
-</script></section><section  data-markdown><script type="text/template">
-## Scaling a Build Infrastructure
+**Container exceeds memory limit**:  
+* The OOM killer kills the container and OpenShift restarts it according to its restart policy
 
-* jobs = number of developers * 3.333
-* masters = number of jobs/500
-* executors = number of jobs * 0.03
-
-Source: https://jenkins.io/doc/book/architecting-for-scale/
-</script></section><section  data-markdown><script type="text/template">
-## Why a CI Server?
-
-</script></section><section  data-markdown><script type="text/template">
-![Fist](images/fist_by_jnatoli.jpg)
-
-Source: http://jnatoli.deviantart.com/
-</script></section><section  data-markdown><script type="text/template">
-## Continuous Integration
-
-* Code in scm
-* Check-in and push at least daily
-* Automated compiling, testing, integrating and building
-* Reporting and code analysis
-* Deploy to integration environment
-</script></section><section  data-markdown><script type="text/template">
-## Continuous Delivery
-
-“CONTINUOUS DELIVERY IS THE ABILITY TO GET CHANGES OF ALL TYPES—INCLUDING NEW FEATURES, CONFIGURATION CHANGES, BUG FIXES AND EXPERIMENTS—INTO PRODUCTION,OR INTO THE HANDS OF USERS, SAFELY AND QUICKLY IN A SUSTAINABLE WAY.”
-
--Jez Humble, continuousdelivery.com
-</script></section><section  data-markdown><script type="text/template">
-## Continuous Delivery
-
-“CONTINUOUS DELIVERY IS THE ABILITY TO GET CHANGES OF **ALL TYPES**—INCLUDING NEW FEATURES, CONFIGURATION CHANGES, BUG FIXES AND EXPERIMENTS—INTO PRODUCTION,OR **INTO THE HANDS OF USERS, SAFELY AND QUICKLY IN A SUSTAINABLE WAY.**”
-
--Jez Humble, continuousdelivery.com
-</script></section><section  data-markdown><script type="text/template">
-## Continuous Delivery Pipeline
-
-![Continuous Delivery Pipeline](images/ContinuousDeliveryPipeline.png)
-</script></section><section  data-markdown><script type="text/template">
-## Continuous Delivery != Continuous Deployment
-
-![Continuous Delivery Not Continuous Deployment](images/ContinuousDeliveryNotDeployment.png)
-</script></section><section  data-markdown><script type="text/template">
-<!--section -->
-# Pipelines
-
-<!-- .slide: class="master02" -->
-</script></section><section  data-markdown><script type="text/template">
-## Why should we use Pipelines
-
-* Developer Experience
-* Self contained
-* Fully automated and documented
-* Reusable
-</script></section><section  data-markdown><script type="text/template">
-## Pipeline Advantages
-
-* Can be reviewed, forked, iterated upon and audited
-* Running pipelines survive master restart
-* Can stop and wait for human input
-* Support complex CI/CD requirements
-* DSL can be extended through shared libraries
-</script></section><section  data-markdown><script type="text/template">
-## Declarative vs Scripted (imperative)
-
-* Declarative: Validation => better error reporting
-* Declarative: Better GUI support (Blue Ocean)
-* Scripted: Rapid prototyping
-* Scripted: Nearly full power of Groovy (good and bad)
-</script></section><section  data-markdown><script type="text/template">
-## Declarative
-
-```groovy
-pipeline {
-    agent any
-
-    stages {
-        stage('Build') {
-            steps {
-                echo 'Building...'
-            }
-        }
-	}
-}
-```
-</script></section><section  data-markdown><script type="text/template">
-## Scripted
-
-```groovy
-node {
-    stage('Build') {
-      echo 'Building...'
-    }
-}
-```
-</script></section><section  data-markdown><script type="text/template">
-## Groovy Syntax Limitations
-
-* Pipelines must survive restart of the jenkins
-* Scripts must serialize data back to the master
-* Some Groovy idioms with closures not supported, e.g:
-```
-collection.each { item -> /* perform operation */ }
-```
-</script></section><section  data-markdown><script type="text/template">
-## Tools
-
-* Jobs require different build tools
-* To keep slaves stateless, tools are installed dynamically during job execution
-* Jenkins provides auto tool installer concept
-</script></section><section  data-markdown><script type="text/template">
-## Tools @ Puzzle
-
-* Seeder job that manages custom tools
-* Update jobs that automatically update tools where possible
-* All custom tool scripts are managed in git
-* Custom tools check if they already exist (performance)
-</script></section><section  data-markdown><script type="text/template">
-<!--section -->
-# Best Practices
-
-<!-- .slide: class="master02" -->
-</script></section><section  data-markdown><script type="text/template">
-## keep everything you need to build, deploy, test, & release in version control 
-</script></section><section  data-markdown><script type="text/template">
-## Best Practices
-
-* Use folders
-* Keep the slave stateless
-* Archive artifacts
-* Reuse functionalities in shared libraries
-</script></section><section  data-markdown><script type="text/template">
-## Best Practices Folders Plugin
-
-How to organize pipelines @ puzzle
-
-```
-[Customer]-[project]
-
-hit-hitobito
-pitc-appuio
-```
-</script></section><section  data-markdown><script type="text/template">
-## Debugging a Pipeline
-
-Use the replay function of a pipeline
-
-![Jenkins Overview](images/Jenkins_replay.png)
-</script></section><section  data-markdown><script type="text/template">
-## Debugging a Pipeline
-
-Use the replay function of a pipeline
-
-![Jenkins Overview](images/Jenkins_replay2.png)
-</script></section><section  data-markdown><script type="text/template">
-## Snippet Generator 
-
-![Jenkins Overview](images/Jenkins_snippet_generator.png)
-</script></section><section  data-markdown><script type="text/template">
-## Snippet Generator 
-
-![Jenkins Overview](images/Jenkins_snippet_generator2.png)
-</script></section><section  data-markdown><script type="text/template">
-## Glossary
-
-| Term | Description |
-|---|---|
-| Pipeline  | A user-defined model of a continuous delivery pipeline  |
-| Build  | Result of a single execution of a Project  |
-| Agent  | An agent is typically a machine, or container, which connects to a Jenkins master and executes tasks when directed by the master.  |
-| Node  | A machine which is part of the Jenkins environment and capable of executing Pipelines or Projects.  |
-| Job  | A deprecated term, synonymous with Project.  |
-| Stage  | the phases of a pipeline are called stages  |
-| Step  | A single task; fundamentally steps tell Jenkins what to do inside of a Pipeline or Project.  |
-
-</script></section><section  data-markdown><script type="text/template">
-<!--section -->
-# Jenkins @ Puzzle
-
-<!-- .slide: class="master02" -->
-</script></section><section  data-markdown><script type="text/template">
-## Puzzle Jenkins Environment
-
-* 1 master
-* 1 main slave
-* OpenShift docker slaves on demand
-</script></section><section  data-markdown><script type="text/template">
-## OpenShift Integration (1/2)
-
-* Currently Kubernetes plugin
-* Custom slaves build with its own pipeline
-* Project specific Slaves
-</script></section><section  data-markdown><script type="text/template">
-## OpenShift Integration (2/2)
-
-Prior to 1.0.14 (impl. of SimpleBuildStep)
-```
-step([$class: 'OpenShiftBuilder', apiURL: .....
-
-```
-
-After 1.0.14
-
-```
-def builder = openshiftBuild buildConfig: 'frontend'
-```
-</script></section><section  data-markdown><script type="text/template">
-<!--section -->
-# Techlab
-
-<!-- .slide: class="master02" -->
-</script></section><section  data-markdown><script type="text/template">
-## Techlab Environment
-
-* 1 master deployed on OpenShift techlab env
-* Every participant runs its own slave locally
-</script></section><section  data-markdown><script type="text/template">
-## How the Techlab Works
-
-* Guided, hands-on Workshop
-* Docs are on GitHub
-* Please help us to improve the techlab
-</script></section><section  data-markdown><script type="text/template">
-## Resources
-
-* Jenkins Book: <https://jenkins.io/doc/book/>
-* Examples <https://jenkins.io/doc/pipeline/examples/>
-* OpenShift Examples: <https://github.com/openshift/origin/tree/master/examples/jenkins/pipeline>
-* Jenkins Techlab: <https://github.com/puzzle/jenkins-techlab>
-</script></section><section  data-markdown><script type="text/template">
-## Let's Start 
-
-<https://github.com/puzzle/jenkins-techlab>
-</script></section><section  data-markdown><script type="text/template"></script></section></div>
+**Node runs out of memory**:  
+* OpenShift evicts pods till enough memory has been freed.
+* BestEffort pods are killed first, then Burstable pods.
+* Guaruanteed pods are newer evicted because of other pods.
+* The replication controller, if any, starts replacement pods.
+</script></section></div>
         </div>
 
         <script src="./lib/js/head.min.js"></script>
