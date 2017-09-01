@@ -24,39 +24,59 @@
 * Container Requests and Limits
 * Metrics, inkl. Java
 * Application Monitoring
+* Host settings
 </script></section><section  data-markdown><script type="text/template">
 ## Objectives
 
 </script></section><section  data-markdown><script type="text/template">
 <!--section -->
-# Container Requests and Limits
+## Container Requests and Limits
 
-* Request: Reserves cpu or memory for a container
-* Limit: Limits the maximum amount of cpu or memory a container can consume
-
-The requests of a pod are the sum of the requests of the containers in the pod.
-The limits of a pod are the sum of the limits of the containers in the pod.
-
-<!-- .slide: class="master02" -->
+* **Request**: reserves cpu or memory for a container
+* **Limit**: limits cpu or memory of a container
+* Pod requests = sum of container requests
+* Pod limits = sum of container limits
 </script></section><section  data-markdown><script type="text/template">
 ## Quality of Service
 
 Requests and limits determine quality of service:
 
-No request and limit: BestEffort
-Request < Limit: Burstable
-Request = Limit: Guaranteed
+* No request and limit: **BestEffort**
+* Request < Limit: **Burstable**
+* Request = Limit: **Guaranteeed**
 </script></section><section  data-markdown><script type="text/template">
-## Consequences
+## Container exceeds memory limit
 
-**Container exceeds memory limit**:  
-* The OOM killer kills the container and OpenShift restarts it according to its restart policy
-
-**Node runs out of memory**:  
+* OOM killer kills the container.
+* OpenShift restarts container according to its restart policy.
+</script></section><section  data-markdown><script type="text/template">
+## Node runs out of memory
 * OpenShift evicts pods till enough memory has been freed.
 * BestEffort pods are killed first, then Burstable pods.
 * Guaruanteed pods are newer evicted because of other pods.
 * The replication controller, if any, starts replacement pods.
+</script></section><section  data-markdown><script type="text/template">
+## Best Practices
+
+* Set **request = limit** for production containers to prevent eviction
+* Set **1/2 limit <= request < limit** for non-production containers to optimize resource usage
+</script></section><section  data-markdown><script type="text/template">
+## Best Practices
+
+Set process limit based on container limit
+
+* Depends on technology
+* E.g. for Java set heap size = 1/2 limit
+* Quality images already implement this, e.g.: [OpenShift Java Image](https://developers.redhat.com/blog/2017/02/23/getting-started-with-openshift-java-s2i/)
+
+## Java Console
+
+https://docs.openshift.com/container-platform/3.5/architecture/infrastructure_components/web_console.html#jvm-console
+
+
+## App Monitoring
+
+https://twiki.puzzle.ch/bin/view/Puzzle/AppMonitoring
 </script></section></div>
         </div>
 
